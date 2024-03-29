@@ -34,12 +34,14 @@ import "@ionic/react/css/display.css";
 /* Theme variables */
 import "./theme/variables.css";
 import BMIResult from "./components/BMIResult";
+import InputControl from "./components/InputControl";
 
 setupIonicReact();
 
 const App = () => {
   const [bmi, setBMI] = useState(null);
   const [error, setError] = useState(null)
+  const [selectedUnit, setSelectedUnit] = useState('metric')
   const weightInputRef = useRef();
   const heightInputRef = useRef();
 
@@ -55,7 +57,13 @@ const App = () => {
       setError("Please Enter a Valid (non-negative) Number")
       return;
     }
-    const result = enteredWeight / (enteredHeight * enteredHeight);
+
+    const weightConversionFactor = selectedUnit === 'metric' ? 1 : 2.2;
+    const heightConversionFactor = selectedUnit === 'metric' ? 1 : 3.28
+
+    const weight = +enteredWeight / weightConversionFactor;
+    const height = +enteredHeight / heightConversionFactor;
+    const result = weight / (height * height);
     setBMI(result);
   };
 
@@ -63,6 +71,10 @@ const App = () => {
     heightInputRef.current.value = "";
     weightInputRef.current.value = "";
     setBMI(null);
+  };
+
+  const handleSelectUnitHandler = (unit) => {
+    setSelectedUnit(unit);
   };
 
   return (
@@ -82,12 +94,18 @@ const App = () => {
       </IonHeader>
       <IonContent className="ion-padding">
         <IonGrid>
+        <IonRow>
+          <IonCol>
+            <InputControl selectedValue={selectedUnit} onSelectValue={handleSelectUnitHandler}/>
+          </IonCol>
+        </IonRow>
+
           <IonRow>
             <IonCol>
               <IonItem>
                 <IonInput
                   labelPlacement="floating"
-                  label="Height"
+                  label={`Height (${selectedUnit === 'metric' ? 'meters' : 'feet'})`}
                   placeholder="Height"
                   type="number"
                   ref={heightInputRef}
@@ -101,7 +119,7 @@ const App = () => {
               <IonItem>
                 <IonInput
                   labelPlacement="floating"
-                  label="Weight"
+                  label={`Weight (${selectedUnit ==='metric' ? 'kg': 'lb'})`}
                   placeholder="Weight"
                   type="number"
                   ref={weightInputRef}
